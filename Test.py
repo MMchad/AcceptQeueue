@@ -11,17 +11,21 @@ def Screenshot():
 
 def TemplateMatch(Template):
     Screen = Screenshot()
-    Result = cv.matchTemplate(Template,Screen,cv.TM_CCOEFF_NORMED)
+    W, H = Template.shape[::-1]
+    Result = cv.matchTemplate(Template, Screen,cv.TM_CCOEFF_NORMED)
+    threshold = 0.8
+    loc = np.where( Result >= threshold)
     (minVal, maxVal, minLoc, maxLoc) = cv.minMaxLoc(Result)
-    (startX, startY) = maxLoc
-    endX = startX + Template.shape[1]
-    endY = startY + Template.shape[0]
-    ResultImage = None
-    cv.rectangle(ResultImage, (startX, startY), (endX, endY), (255, 0, 0), 3)
-    # show the output image
-    cv.imshow("Output", ResultImage)
-    cv.waitKey(0)
+    print(maxVal)
+    Top_Left = maxLoc
+    Bottom_Right = (Top_Left[0] + W, Top_Left[1] + H)
+    cv.rectangle(Screen,Top_Left, Bottom_Right, 255, 2)
+    plt.subplot(121),plt.imshow(Result,cmap = 'gray')
+    plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
+    plt.subplot(122),plt.imshow(Screen,cmap = 'gray')
+    plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
+    plt.show()
 
 time.sleep(3)
-Template = cv.imread('Images/AcceptButton.jpg',0)
+Template = cv.imread('Images/AcceptButton.jpg', 0)
 TemplateMatch(Template)
