@@ -16,33 +16,46 @@ def TemplateMatch(Template):
 
     #Take a screenshot
     Screen = Screenshot()
-    found = None
+    Found = None
     #loop over scaled versions of screenshot
     for scale in np.linspace(0.2, 1.0, 20)[::-1]:
         #Resize image
         Resized = imutils.resize(Screen, width = int(Screen.shape[1] * scale))
-        r = Screen.shape[1] / float(Resized.shape[1])
+        Ratio = Screen.shape[1] / float(Resized.shape[1])
         #Make sure scaled image is bigger than template
-        if Resized.shape[0] < tH or Resized.shape[1] < tW:
+        if Resized.shape[0] < Template_Height or Resized.shape[1] < Template_Width:
             break
         #Edge template image
-        edged = cv.Canny(Resized, 50, 200)
+        Edged = cv.Canny(Resized, 50, 200)
         #Comapre images using OPENCV
-        Result = cv.matchTemplate(edged, Template, cv.TM_CCOEFF_NORMED)
+        Result = cv.matchTemplate(Edged, Template, cv.TM_CCOEFF_NORMED)
         #Grab maxVal and compare it until best match is obtained
         (_, maxVal, _, maxLoc) = cv.minMaxLoc(Result)
-        if found is None or maxVal > found[0]:
-            found = (maxVal, maxLoc, r)  
+        if Found is None or maxVal > Found[0]:
+            print("MaxVal: ", maxVal)
+            Found = (maxVal, maxLoc, Ratio)  
+    
     #Show image with selection
-    (_, maxLoc, r) = found
-    (startX, startY) = (int(maxLoc[0] * r), int(maxLoc[1] * r))
-    (endX, endY) = (int((maxLoc[0] + tW) * r), int((maxLoc[1] + tH) * r))
-    cv.rectangle(Screen, (startX, startY), (endX, endY), (0, 0, 255), 2)
-    cv.imshow("Image", Screen)
-    cv.waitKey(0)
+    #(_, maxLoc, Ratio) = Found
+    #(startX, startY) = (int(maxLoc[0] * Ratio), int(maxLoc[1] * Ratio))
+    #(endX, endY) = (int((maxLoc[0] + Template_Width) * Ratio), int((maxLoc[1] + Template_Height) * Ratio))
+    #cv.rectangle(Screen, (startX, startY), (endX, endY), (0, 0, 255), 2)
+    #cv.imshow("Image", Screen)
+    #cv.waitKey(0)
 
-time.sleep(3)
+    return Found
+    
 Template = cv.imread('Images/AcceptButton.png', 0)
 Template = cv.Canny(Template, 50, 200)
-(tH, tW) =Template.shape[:2]
-TemplateMatch(Template)
+(Template_Height, Template_Width) =Template.shape[:2]
+
+while True:
+    maxVal, maxLoc, Ratio = TemplateMatch(Template)
+    if maxVal >= 0.7:
+        break;
+    time.sleep(0.5)
+ClickX = int((maxLoc[0] + (Template_Width/2)) * Ratio)
+ClickY = int((maxLoc[1] + (Template_Height/2)) * Ratio)
+pyautogui.moveTo(ClickX, ClickY)
+time.sleep(3)
+pyautogui.click()
