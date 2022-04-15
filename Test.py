@@ -51,10 +51,10 @@ Template = cv.Canny(Template, 50, 200)
 
 while True:
     maxVal, maxLoc, Ratio = TemplateMatch(Template)
-    if maxVal >= 0.7:
+    if maxVal >= 0.6:
         break;
     time.sleep(1)
 ClickX = int((maxLoc[0] + (Template_Width/2)) * Ratio)
 ClickY = int((maxLoc[1] + (Template_Height/2)) * Ratio)
 time.sleep(2)
-pyautogui.leftClick(ClickX,ClickY, 2, 1)
+pyautogui.leftClick(ClickX,ClickY, 2, 0)
