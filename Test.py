@@ -53,9 +53,8 @@ while True:
     maxVal, maxLoc, Ratio = TemplateMatch(Template)
     if maxVal >= 0.7:
         break;
-    time.sleep(0.5)
+    time.sleep(1)
 ClickX = int((maxLoc[0] + (Template_Width/2)) * Ratio)
 ClickY = int((maxLoc[1] + (Template_Height/2)) * Ratio)
-pyautogui.moveTo(ClickX, ClickY)
-time.sleep(3)
-pyautogui.click()
+time.sleep(2)
+pyautogui.leftClick(ClickX,ClickY, 2, 1)
