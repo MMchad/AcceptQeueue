@@ -4,6 +4,10 @@ from matplotlib import pyplot as plt
 import pyautogui
 import time
 import imutils
+import tkinter
+import threading
+import riotwatcher
+import tkinter as TK
 
 #Returns screenshot of screen
 def Screenshot():
@@ -12,7 +16,7 @@ def Screenshot():
     return Screen
 
 #Compare screenshot to passed image template as argument
-def TemplateMatch(Template):
+def TemplateMatch(Template, Template_Height, Template_Width):
 
     #Take a screenshot
     Screen = Screenshot()
@@ -44,17 +48,29 @@ def TemplateMatch(Template):
     #cv.waitKey(0)
 
     return Found
-    
-Template = cv.imread('Images/AcceptButton.png', 0)
-Template = cv.Canny(Template, 50, 200)
-(Template_Height, Template_Width) =Template.shape[:2]
 
-while True:
-    maxVal, maxLoc, Ratio = TemplateMatch(Template)
-    if maxVal >= 0.6:
-        break;
-    time.sleep(1)
-ClickX = int((maxLoc[0] + (Template_Width/2)) * Ratio)
-ClickY = int((maxLoc[1] + (Template_Height/2)) * Ratio)
-time.sleep(2)
-pyautogui.leftClick(ClickX,ClickY, 2, 0)
+#Await queue pop and accept
+def AcceptQueue():
+    window = TK.Tk()
+    #Grab accept button image and edge it
+    Template = cv.imread('Images/AcceptButton.png', 0)
+    Template = cv.Canny(Template, 50, 200)
+    (Template_Height, Template_Width) = Template.shape[:2]
+    #Look for accept button 
+    while True:
+        maxVal, maxLoc, Ratio = TemplateMatch(Template, Template_Height, Template_Width )
+        if maxVal >= 0.6:
+            break;
+        time.sleep(2)
+
+        #Move mouse and click it
+        ClickX = int((maxLoc[0] + (Template_Width/2)) * Ratio)
+        ClickY = int((maxLoc[1] + (Template_Height/2)) * Ratio)
+        pyautogui.leftClick(ClickX,ClickY, 2, 0)
+        time.sleep(3)
+    
+
+
+
+
+
