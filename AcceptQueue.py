@@ -8,6 +8,7 @@ import tkinter
 import threading
 import riotwatcher
 import tkinter as TK
+from threading import Thread
 
 #Returns screenshot of screen
 def Screenshot():
@@ -36,6 +37,7 @@ def TemplateMatch(Template, Template_Height, Template_Width):
         #Grab maxVal and compare it until best match is obtained
         (_, maxVal, _, maxLoc) = cv.minMaxLoc(Result)
         if Found is None or maxVal > Found[0]:
+            
             print("MaxVal: ", maxVal)
             Found = (maxVal, maxLoc, Ratio)  
     
@@ -50,25 +52,45 @@ def TemplateMatch(Template, Template_Height, Template_Width):
     return Found
 
 #Await queue pop and accept
+Status = False
 def AcceptQueue():
-    window = TK.Tk()
     #Grab accept button image and edge it
     Template = cv.imread('Images/AcceptButton.png', 0)
     Template = cv.Canny(Template, 50, 200)
     (Template_Height, Template_Width) = Template.shape[:2]
     #Look for accept button 
-    while True:
+    while Status:
         maxVal, maxLoc, Ratio = TemplateMatch(Template, Template_Height, Template_Width )
         if maxVal >= 0.6:
-            break;
+            #Move mouse and click it
+            ClickX = int((maxLoc[0] + (Template_Width/2)) * Ratio)
+            ClickY = int((maxLoc[1] + (Template_Height/2)) * Ratio)
+            pyautogui.leftClick(ClickX,ClickY, 2, 0)
+            time.sleep(3)
         time.sleep(2)
+        
 
-        #Move mouse and click it
-        ClickX = int((maxLoc[0] + (Template_Width/2)) * Ratio)
-        ClickY = int((maxLoc[1] + (Template_Height/2)) * Ratio)
-        pyautogui.leftClick(ClickX,ClickY, 2, 0)
-        time.sleep(3)
-    
+def Toggle():
+    T = Thread(target= AcceptQueue)
+    global Status 
+    if Status:
+        Button.config(text='OFF')
+        Status = False
+        
+    else:
+        Button.config(text='ON')
+        Status = True
+        T.start()
+        
+
+
+Window = TK.Tk()
+Window.geometry("200x25")
+Button = TK.Button(text="OFF", width=10, command=Toggle)
+Label = TK.Label(text= "Accept Queues")
+Label.pack(side= TK.LEFT)
+Button.pack(side = TK.RIGHT)
+Window.mainloop()
 
 
 
