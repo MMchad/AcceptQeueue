@@ -9,6 +9,18 @@ import threading
 import riotwatcher
 import tkinter as TK
 from threading import Thread
+import sys
+import os
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 #Returns screenshot of screen
 def Screenshot():
@@ -55,7 +67,7 @@ def TemplateMatch(Template, Template_Height, Template_Width):
 Status = False
 def AcceptQueue():
     #Grab accept button image and edge it
-    Template = cv.imread('Images/AcceptButton.png', 0)
+    Template = cv.imread(resource_path("AcceptButton.png"), 0)
     Template = cv.Canny(Template, 50, 200)
     (Template_Height, Template_Width) = Template.shape[:2]
     #Look for accept button 
@@ -86,6 +98,8 @@ def Toggle():
 
 Window = TK.Tk()
 Window.geometry("200x25")
+Window.resizable(False,False)
+Window.title("AQ")
 Button = TK.Button(text="OFF", width=10, command=Toggle)
 Label = TK.Label(text= "Accept Queues")
 Label.pack(side= TK.LEFT)
