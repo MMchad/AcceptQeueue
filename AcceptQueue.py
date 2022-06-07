@@ -95,7 +95,6 @@ def Toggle():
         T.start()
         
 
-
 Window = TK.Tk()
 Window.geometry("200x25")
 Window.resizable(False,False)
