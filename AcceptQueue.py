@@ -1,3 +1,5 @@
+from cgi import test
+from sqlite3 import Row
 import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
@@ -12,6 +14,7 @@ from threading import Thread
 import sys
 import os
 
+#Returns actual path for files after release
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
@@ -35,7 +38,7 @@ def TemplateMatch(Template, Template_Height, Template_Width):
     Screen = Screenshot()
     Found = None
     #loop over scaled versions of screenshot
-    for scale in np.linspace(0.2, 1.0, 20)[::-1]:
+    for scale in np.linspace(0.1, 1, 35)[::-1]:
         #Resize image
         Resized = imutils.resize(Screen, width = int(Screen.shape[1] * scale))
         Ratio = Screen.shape[1] / float(Resized.shape[1])
@@ -50,28 +53,23 @@ def TemplateMatch(Template, Template_Height, Template_Width):
         (_, maxVal, _, maxLoc) = cv.minMaxLoc(Result)
         if Found is None or maxVal > Found[0]:
             
-            print("MaxVal: ", maxVal)
+            print("MaxVal: ", maxVal, "  Ratio: ",scale)
             Found = (maxVal, maxLoc, Ratio)  
     
     #Show image with selection
     #(_, maxLoc, Ratio) = Found
     #(startX, startY) = (int(maxLoc[0] * Ratio), int(maxLoc[1] * Ratio))
-    #(endX, endY) = (int((maxLoc[0] + Template_Width) * Ratio), int((maxLoc[1] + Template_Height) * Ratio))
+    #(endX, endY) = (int((maxLoc[0] + Template_Width) * Ratio ), int((maxLoc[1] + Template_Height)* Ratio)) 
     #cv.rectangle(Screen, (startX, startY), (endX, endY), (0, 0, 255), 2)
-    #cv.imshow("Image", Screen)
+    #cv.imshow("Edged", Screen)
     #cv.waitKey(0)
-
     return Found
 
 #Await queue pop and accept
-Status = False
 def AcceptQueue():
-    #Grab accept button image and edge it
-    Template = cv.imread(resource_path("AcceptButton.png"), 0)
-    Template = cv.Canny(Template, 50, 200)
     (Template_Height, Template_Width) = Template.shape[:2]
     #Look for accept button 
-    while Status:
+    while Running:
         maxVal, maxLoc, Ratio = TemplateMatch(Template, Template_Height, Template_Width )
         if maxVal >= 0.6:
             #Move mouse and click it
@@ -81,28 +79,55 @@ def AcceptQueue():
             time.sleep(3)
         time.sleep(2)
         
-
+#On Off Button
+Running = False
 def Toggle():
-    T = Thread(target= AcceptQueue)
-    global Status 
-    if Status:
-        Button.config(text='OFF')
-        Status = False
+    T = Thread(target= AcceptQueue, daemon= True)
+    global Running
+    #Grab accept button image and edge it
+    global Template 
+    Path = "AcceptButton"+ResButton["text"]+".png"
+    Template= cv.imread(resource_path(Path), 0)
+    Template = cv.Canny(Template, 50, 200)
+
+    if Running:
+        ToggleButton.config(text='OFF')
+        Running = False
         
     else:
-        Button.config(text='ON')
-        Status = True
+        ToggleButton.config(text='ON')
+        Running = True
         T.start()
+
+def ChangeRes():
+    global Running
+    Running = False
+    ToggleButton.config(text='OFF')
+
+    if ResButton["text"] == "1024x576":
+        ResButton.config(text = "1280x720")
+
+    elif ResButton["text"] == "1280x720":
+        ResButton.config(text = "1600x900")
+        
+    else:
+        ResButton.config(text = "1024x576")
         
 
+
+#GUI Stuff
 Window = TK.Tk()
-Window.geometry("200x25")
+Window.geometry("210x53")
 Window.resizable(False,False)
 Window.title("AQ")
-Button = TK.Button(text="OFF", width=10, command=Toggle)
-Label = TK.Label(text= "Accept Queues")
-Label.pack(side= TK.LEFT)
-Button.pack(side = TK.RIGHT)
+ToggleLabel = TK.Label(text= "Accept Queues")
+ToggleLabel.grid(row = 0, column = 0)
+ToggleButton = TK.Button(text="OFF", width=10, command=Toggle)
+ToggleButton.grid(row = 0, column = 1)
+ResLabel = TK.Label(text= "Client Resolution")
+ResLabel.grid(row = 1, column = 0)
+ResButton = TK.Button(text="1024x576", width=10, command=ChangeRes)
+ResButton.grid(row = 1, column = 1, padx= 35)
 Window.mainloop()
 
 
