@@ -1,14 +1,10 @@
 from cgi import test
-from sqlite3 import Row
 import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
 import pyautogui
 import time
 import imutils
-import tkinter
-import threading
-import riotwatcher
 import tkinter as TK
 from threading import Thread
 import sys
@@ -90,6 +86,7 @@ def Toggle():
     Template= cv.imread(resource_path(Path), 0)
     Template = cv.Canny(Template, 50, 200)
 
+    #Toggle search and change text on button
     if Running:
         ToggleButton.config(text='OFF')
         Running = False
@@ -99,11 +96,15 @@ def Toggle():
         Running = True
         T.start()
 
+#Change resolution of image
 def ChangeRes():
+
+    #Stop searching
     global Running
     Running = False
     ToggleButton.config(text='OFF')
-
+    
+    #Change resolution of image and change button text to match
     if ResButton["text"] == "1024x576":
         ResButton.config(text = "1280x720")
 
