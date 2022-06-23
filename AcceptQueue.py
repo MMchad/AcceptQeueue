@@ -25,67 +25,42 @@ def resource_path(relative_path):
 def Screenshot():
     Screen = pyautogui.screenshot()
     Screen = cv.cvtColor(np.array(Screen), cv.COLOR_BGR2GRAY)
-    return Screen
+    Edged = cv.Canny(Screen, 50, 200)
+    return Edged
 
 #Compare screenshot to passed image template as argument
-def TemplateMatch(Template, Template_Height, Template_Width):
+def TemplateMatch():
 
     #Take a screenshot
     Screen = Screenshot()
     Found = None
-    #loop over scaled versions of screenshot
-    for scale in np.linspace(0.1, 1, 35)[::-1]:
-        #Resize image
-        Resized = imutils.resize(Screen, width = int(Screen.shape[1] * scale))
-        Ratio = Screen.shape[1] / float(Resized.shape[1])
-        #Make sure scaled image is bigger than template
-        if Resized.shape[0] < Template_Height or Resized.shape[1] < Template_Width:
-            break
-        #Edge template image
-        Edged = cv.Canny(Resized, 50, 200)
-        #Comapre images using OPENCV
-        Result = cv.matchTemplate(Edged, Template, cv.TM_CCOEFF_NORMED)
-        #Grab maxVal and compare it until best match is obtained
-        (_, maxVal, _, maxLoc) = cv.minMaxLoc(Result)
-        if Found is None or maxVal > Found[0]:
-            
-            print("MaxVal: ", maxVal, "  Ratio: ",scale)
-            Found = (maxVal, maxLoc, Ratio)  
-    
-    #Show image with selection
-    #(_, maxLoc, Ratio) = Found
-    #(startX, startY) = (int(maxLoc[0] * Ratio), int(maxLoc[1] * Ratio))
-    #(endX, endY) = (int((maxLoc[0] + Template_Width) * Ratio ), int((maxLoc[1] + Template_Height)* Ratio)) 
-    #cv.rectangle(Screen, (startX, startY), (endX, endY), (0, 0, 255), 2)
-    #cv.imshow("Edged", Screen)
-    #cv.waitKey(0)
-    return Found
+    global Templates
+    for Template in Templates:
 
+        #Comapre templates with screenshot using OPENCV
+        Result = cv.matchTemplate(Screen, Template, cv.TM_CCOEFF_NORMED)
+        (_, maxVal, _, maxLoc) = cv.minMaxLoc(Result)
+        if maxVal > 0.7:
+            (TemplateHeight, TemplateWidth) = Template.shape[:2]
+            return maxVal, maxLoc, TemplateHeight, TemplateWidth
+    return 0,0,0,0
 #Await queue pop and accept
 def AcceptQueue():
-    (Template_Height, Template_Width) = Template.shape[:2]
     #Look for accept button 
     while Running:
-        maxVal, maxLoc, Ratio = TemplateMatch(Template, Template_Height, Template_Width )
+        maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch()
         if maxVal >= 0.6:
             #Move mouse and click it
-            ClickX = int((maxLoc[0] + (Template_Width/2)) * Ratio)
-            ClickY = int((maxLoc[1] + (Template_Height/2)) * Ratio)
+            ClickX = int((maxLoc[0] + (TemplateWidth/2)))
+            ClickY = int((maxLoc[1] + (TemplateHeight/2)))
             pyautogui.leftClick(ClickX,ClickY, 2, 0)
-            time.sleep(3)
-        time.sleep(2)
+        time.sleep(0.5)
         
 #On Off Button
 Running = False
 def Toggle():
     T = Thread(target= AcceptQueue, daemon= True)
     global Running
-    #Grab accept button image and edge it
-    global Template 
-    Path = "AcceptButton"+ResButton["text"]+".png"
-    Template= cv.imread(resource_path(Path), 0)
-    Template = cv.Canny(Template, 50, 200)
-
     #Toggle search and change text on button
     if Running:
         ToggleButton.config(text='OFF')
@@ -103,32 +78,31 @@ def ChangeRes():
     global Running
     Running = False
     ToggleButton.config(text='OFF')
-    
-    #Change resolution of image and change button text to match
-    if ResButton["text"] == "1024x576":
-        ResButton.config(text = "1280x720")
-
-    elif ResButton["text"] == "1280x720":
-        ResButton.config(text = "1600x900")
-        
-    else:
-        ResButton.config(text = "1024x576")
         
 
+Temp1Path = "AcceptButton1024x576.png"
+Temp1 = cv.imread(resource_path(Temp1Path), 0)
+Temp1 = cv.Canny(Temp1, 50, 200)
+
+Temp2Path = "AcceptButton1280x720.png"
+Temp2 = cv.imread(resource_path(Temp2Path), 0)
+Temp2 = cv.Canny(Temp2, 50, 200)
+
+Temp3Path = "AcceptButton1600x900.png"
+Temp3 = cv.imread(resource_path(Temp3Path), 0)
+Temp3 = cv.Canny(Temp3, 50, 200)
+
+Templates = [Temp1, Temp2, Temp3]
 
 #GUI Stuff
 Window = TK.Tk()
-Window.geometry("210x53")
+Window.geometry("165x25")
 Window.resizable(False,False)
 Window.title("AQ")
 ToggleLabel = TK.Label(text= "Accept Queues")
 ToggleLabel.grid(row = 0, column = 0)
 ToggleButton = TK.Button(text="OFF", width=10, command=Toggle)
 ToggleButton.grid(row = 0, column = 1)
-ResLabel = TK.Label(text= "Client Resolution")
-ResLabel.grid(row = 1, column = 0)
-ResButton = TK.Button(text="1024x576", width=10, command=ChangeRes)
-ResButton.grid(row = 1, column = 1, padx= 35)
 Window.mainloop()
 
 
