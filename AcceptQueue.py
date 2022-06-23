@@ -52,6 +52,7 @@ def AcceptQueue():
             ClickX = int((maxLoc[0] + (TemplateWidth/2)))
             ClickY = int((maxLoc[1] + (TemplateHeight/2)))
             pyautogui.leftClick(ClickX,ClickY, 2, 0)
+            time.sleep(4)
         time.sleep(0.5)
         
 #On Off Button
