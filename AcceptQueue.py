@@ -1,10 +1,8 @@
 from cgi import test
 import cv2 as cv
 import numpy as np
-from matplotlib import pyplot as plt
 import pyautogui
 import time
-import imutils
 import tkinter as TK
 from threading import Thread
 import sys
@@ -44,6 +42,7 @@ def TemplateMatch():
             (TemplateHeight, TemplateWidth) = Template.shape[:2]
             return maxVal, maxLoc, TemplateHeight, TemplateWidth
     return 0,0,0,0
+
 #Await queue pop and accept
 def AcceptQueue():
     #Look for accept button 
@@ -70,16 +69,8 @@ def Toggle():
         ToggleButton.config(text='ON')
         Running = True
         T.start()
-
-#Change resolution of image
-def ChangeRes():
-
-    #Stop searching
-    global Running
-    Running = False
-    ToggleButton.config(text='OFF')
         
-
+#Get buttons with different client resolution
 Temp1Path = "AcceptButton1024x576.png"
 Temp1 = cv.imread(resource_path(Temp1Path), 0)
 Temp1 = cv.Canny(Temp1, 50, 200)
