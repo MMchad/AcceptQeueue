@@ -112,6 +112,7 @@ def BanChamp(ChampToBan):
     SearchForChamp(ChampToBan)
     time.sleep(0.1)
     SelectChamp()
+    time.sleep(0.1)
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(BanButton, True)
     if maxVal >= 0.75 and AutoSelect:
         Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth, 1)
@@ -196,6 +197,7 @@ def ToggleAutoSelect():
         ChampSelectText.config(state = TK.DISABLED)
         AlternativeChampSelectText.config(state = TK.DISABLED)
         ChampBanText.config(state = TK.DISABLED)
+        print(ChampBanText.keys())
         ChampToSelect, AlternativeChampToSelect, ChampToBan = ChampSelectText.get(), AlternativeChampSelectText.get(), ChampBanText.get()
         AutoSelect = True
         ProcedureThread.start()
@@ -311,7 +313,7 @@ LockInButton = [LockIn1, LockIn2, LockIn3]
 DodgeChecks = [DodgeCheck1, DodgeCheck2, DodgeCheck3]
 TopLane = [TopLane1, TopLane2, TopLane3]
 
-################################################################ Assets
+################################################################
 
 ChampToBan = ""
 ChampToSelect = ""
@@ -324,7 +326,7 @@ with urllib.request.urlopen("http://ddragon.leagueoflegends.com/cdn/12.12.1/data
     for Champ in data["data"]:
         Champs.append(Champ)
 
-#GUI Stuff
+#################################################################GUI Stuff
 Window = TK.Tk()
 Window.geometry("300x150")
 Window.resizable(False,False)
@@ -352,14 +354,14 @@ AlternativeChampSelectText.grid(row = 3, column = 1)
 
 ChampBanLabel = TK.Label(text= "Champ to ban")
 ChampBanLabel.grid(row = 4, column = 0, sticky = TK.W, padx = 6)
-ChampBanText = AutocompleteEntry(completevalues=Champs)
+ChampBanText = AutocompleteEntry(completevalues=Champ)
 ChampBanText.grid(row = 4, column = 1)
 
 Window.columnconfigure([0,1], weight=2)
 Window.rowconfigure([0,1,2,3,4], weight = 2)
 Window.mainloop()
 
-
+#################################################################
 
 
 
