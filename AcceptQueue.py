@@ -1,5 +1,4 @@
-from multiprocessing import Process
-from tkinter.tix import Select
+from ttkwidgets.autocomplete import AutocompleteEntry
 from tokenize import String
 import cv2 as cv
 from cv2 import waitKey
@@ -10,8 +9,10 @@ import tkinter as TK
 from threading import Thread
 import sys
 import os
+import urllib.request, json 
 
 from setuptools import Command
+
 
 #Returns actual path for files after release
 def Path(relative_path):
@@ -67,7 +68,7 @@ def AcceptQueue():
             time.sleep(4)
         time.sleep(2)
 
-    
+#Champ select process    
 def ChampSelect():
     global ChampToSelect, InChampSelect, ChampToBan, AlternativeChampToSelect, LockInButton
     SearchBarLoc = list()
@@ -96,13 +97,15 @@ def ChampSelect():
                 SelectChamp()
                 time.sleep(0.1)
                 LockInChamp()
-            
+
+#Click on lock in button
 def LockInChamp():
     global LockIn
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(LockInButton, True)
     if maxVal > 0.75 and AutoSelect:
         Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth, 1)
 
+#Search for champ and select it then click ban button
 def BanChamp(ChampToBan):
 
     global BanButton
@@ -115,6 +118,7 @@ def BanChamp(ChampToBan):
     return maxVal
     
 
+#Searches for champ and clicks it using Click()
 def SearchForChamp(ChampName):
 
     global SearchBar1
@@ -124,10 +128,12 @@ def SearchForChamp(ChampName):
          pyautogui.write(ChampName)
     return maxVal
 
+#Clears searchbar and searches for champ and clicks it using Click()
 def SearchForAlternativeChamp(ChampName, X, Y, TemplateHeight, TemplateWidth):
     Click(X, Y, TemplateHeight, TemplateWidth, 2)
     pyautogui.write(ChampName) 
 
+#Selects champ that was searched for
 def SelectChamp():
     global TopLane
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(TopLane, False)
@@ -135,6 +141,7 @@ def SelectChamp():
         Click(maxLoc[0] + 25 , maxLoc[1] + 50, TemplateHeight, TemplateWidth, 1)
     return maxVal
     
+#After entering champ select check if it is dodged and update InChamoSelect
 def DodgeCheck():
     global InChampSelect, DodgeChecks, AutoSelect
     while True and AutoSelect:
@@ -145,6 +152,7 @@ def DodgeCheck():
             time.sleep(5)
         time.sleep(5)
 
+#Check if in champ select then run ChampSelect() on different Thread
 def CheckChampSelect():
     global SearchBar1, InChampSelect, AutoSelect
 
@@ -161,7 +169,7 @@ def CheckChampSelect():
                 time.sleep(5)
 
 
-
+#Initiate required methods for auto champ select ond ifferent threads
 InChampSelect = False
 def Procedure():
     CheckChampSelectThread = Thread(target = CheckChampSelect, daemon = True)
@@ -170,27 +178,29 @@ def Procedure():
     DodgeCheckThread.start()
 
 
-#On Off Buttons
+#Toggle auto champ select and run Prcoedure() on different thread
 AutoSelect = False
 def ToggleAutoSelect():
-    global AutoSelect, ToggleSelectButton, ChampBanText, ChampSelectText, AlternativeChampSelectText
+    global AutoSelect, ToggleSelectButton, ChampBanText, ChampSelectText, AlternativeChampSelectText, ChampToSelect, AlternativeChampToSelect, ChampToBan
     ProcedureThread = Thread(target = Procedure, daemon= True)
-    #Toggle search and change text on button
+
     if AutoSelect:
         ToggleSelectButton.config(text='OFF')
-        ChampBanText.config(state = TK.NORMAL, bg = "white")
-        ChampSelectText.config(state = TK.NORMAL, bg = "white")
-        AlternativeChampSelectText.config(state = TK.NORMAL, bg = "white")
+        ChampSelectText.config(state = TK.NORMAL)
+        AlternativeChampSelectText.config(state = TK.NORMAL)
+        ChampBanText.config(state = TK.NORMAL)
         AutoSelect = False
         
     else:
         ToggleSelectButton.config(text='ON')
-        ChampBanText.config(state = TK.DISABLED, bg = "gray")
-        ChampSelectText.config(state = TK.DISABLED, bg = "gray")
-        AlternativeChampSelectText.config(state = TK.DISABLED, bg = "gray")
+        ChampSelectText.config(state = TK.DISABLED)
+        AlternativeChampSelectText.config(state = TK.DISABLED)
+        ChampBanText.config(state = TK.DISABLED)
+        ChampToSelect, AlternativeChampToSelect, ChampToBan = ChampSelectText.get(), AlternativeChampSelectText.get(), ChampBanText.get()
         AutoSelect = True
         ProcedureThread.start()
-        
+
+#Toggle auto accept  and run AcceptQueue() on different thread      
 AutoAccept = False
 def ToggleAccept():
     global AutoAccept,ToggleAcceptButton
@@ -206,19 +216,7 @@ def ToggleAccept():
         AutoAccept = True
         AcceptQueueThread.start()
 
-def UpdateChampToSelect(Name):
-    global ChampToSelect
-    ChampToSelect = Name.get()
-
-def UpdateChampToBan(Name):
-    global ChampToBan
-    ChampToBan = Name.get()
-
-def UpdateAlternativeChampToSelect(Name):
-    global AlternativeChampToSelect
-    AlternativeChampToSelect= Name.get()
-
-
+################################################################ Assets
 
 AcceptButton1Path = "AcceptButton1024x576.png"
 AcceptButton1 = cv.imread(Path(AcceptButton1Path), 0)
@@ -313,17 +311,21 @@ LockInButton = [LockIn1, LockIn2, LockIn3]
 DodgeChecks = [DodgeCheck1, DodgeCheck2, DodgeCheck3]
 TopLane = [TopLane1, TopLane2, TopLane3]
 
+################################################################ Assets
+
 ChampToBan = ""
 ChampToSelect = ""
 AlternativeChampToSelect = ""
 
+#Champ list for autocomplete
+with urllib.request.urlopen("http://ddragon.leagueoflegends.com/cdn/12.12.1/data/en_US/champion.json") as url:
+    data = json.loads(url.read().decode())
+    Champs = []
+    for Champ in data["data"]:
+        Champs.append(Champ)
+
 #GUI Stuff
 Window = TK.Tk()
-
-TempChampToBan = TK.StringVar()
-TempChampToSelect = TK.StringVar()
-TempAlternativeChampToSelect = TK.StringVar()
-
 Window.geometry("300x150")
 Window.resizable(False,False)
 Window.title("Accept Queue")
@@ -340,20 +342,17 @@ ToggleSelectButton.grid(row = 1, column = 1)
 
 ChampSelectLabel = TK.Label(text= "Champ to select")
 ChampSelectLabel.grid(row = 2, column = 0, sticky = TK.W, padx = 6)
-ChampSelectText = TK.Entry(Window,textvariable = TempChampToSelect)
+ChampSelectText = AutocompleteEntry(completevalues=Champs)
 ChampSelectText.grid(row = 2, column = 1)
-TempChampToSelect.trace("w", lambda name, index, mode, TempChampToSelect=TempChampToSelect: UpdateChampToSelect(TempChampToSelect))
 
 AlternativeChampSelectLabel = TK.Label(text= "Alternative champ to select")
 AlternativeChampSelectLabel.grid(row = 3, column = 0, sticky = TK.W, padx = 6)
-AlternativeChampSelectText = TK.Entry(Window,textvariable = TempAlternativeChampToSelect)
+AlternativeChampSelectText = AutocompleteEntry(completevalues=Champs)
 AlternativeChampSelectText.grid(row = 3, column = 1)
-TempAlternativeChampToSelect.trace("w", lambda name, index, mode, TempAlternativeChampToSelect=TempAlternativeChampToSelect: UpdateAlternativeChampToSelect(TempAlternativeChampToSelect))
 
 ChampBanLabel = TK.Label(text= "Champ to ban")
 ChampBanLabel.grid(row = 4, column = 0, sticky = TK.W, padx = 6)
-ChampBanText = TK.Entry(Window,textvariable = TempChampToBan)
-TempChampToBan.trace("w", lambda name, index, mode, TempChampToBan=TempChampToBan: UpdateChampToBan(TempChampToBan))
+ChampBanText = AutocompleteEntry(completevalues=Champs)
 ChampBanText.grid(row = 4, column = 1)
 
 Window.columnconfigure([0,1], weight=2)
