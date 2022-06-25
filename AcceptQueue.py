@@ -11,7 +11,6 @@ from threading import Thread
 import sys
 import os
 import urllib.request, json
-
 from setuptools import Command
 
 
@@ -91,7 +90,7 @@ def ChampSelect():
             time.sleep(0.2)
             LockInChamp()
             time.sleep(0.2)
-            maxVal, _ ,_ ,_  = TemplateMatch(LockInButton, True)
+            maxVal, _ , _ , _  = TemplateMatch(LockInButton, True)
             if maxVal >= 0.75:
                 SearchForAlternativeChamp(AlternativeChampToSelect,SearchBarLoc[0], SearchBarLoc[1],SearchBarHeight, SearchBarWidth)
                 time.sleep(0.1)
@@ -198,7 +197,7 @@ def ToggleAutoSelect():
         ChampSelectText.config(state = TK.DISABLED, foreground= "green")
         AlternativeChampSelectText.config(state = TK.DISABLED, foreground= "green")
         ChampBanText.config(state = TK.DISABLED, foreground= "red")
-        print(ChampBanText.keys())
+        print(ToggleSelectButton.keys())
         ChampToSelect, AlternativeChampToSelect, ChampToBan = ChampSelectText.get(), AlternativeChampSelectText.get(), ChampBanText.get()
         AutoSelect = True
         ProcedureThread.start()
@@ -327,7 +326,7 @@ with urllib.request.urlopen("http://ddragon.leagueoflegends.com/cdn/12.12.1/data
     for Champ in data["data"]:
         Champs.append(Champ)
 
-#################################################################GUI Stuff
+################################################################# GUI Stuff
 Window = TK.Tk()
 Window.geometry("390x170")
 Window.resizable(False,False)
@@ -337,12 +336,12 @@ Window.configure(background = "grey13")
 
 ToggleAcceptLabel = TK.Label(text= "Accept queues", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
 ToggleAcceptLabel.grid(row = 0, column = 0, sticky = TK.W, padx = 6)
-ToggleAcceptButton = TK.Button(text="OFF", width=10, command=ToggleAccept, background = "grey13",foreground = "red", font = ('Open Sans', 12, 'bold'))
+ToggleAcceptButton = TK.Button(text="OFF", width=10, command=ToggleAccept, background = "grey13",foreground = "red", font = ('Open Sans', 12, 'bold'), relief = "groove" )
 ToggleAcceptButton.grid(row = 0, column = 1)
 
 ToggleSelectLabel = TK.Label(text= "Auto champ select", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
 ToggleSelectLabel.grid(row = 1, column = 0, sticky = TK.W, padx = 6)
-ToggleSelectButton = TK.Button(text="OFF", width=10, command=ToggleAutoSelect, background = "grey13",foreground = "red", font = ('Open Sans', 12, 'bold'))
+ToggleSelectButton = TK.Button(text="OFF", width=10, command=ToggleAutoSelect, background = "grey13",foreground = "red", font = ('Open Sans', 12, 'bold'), relief = "groove")
 ToggleSelectButton.grid(row = 1, column = 1)
 
 ChampSelectLabel = TK.Label(text= "Champ to select 1", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
