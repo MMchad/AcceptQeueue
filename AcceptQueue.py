@@ -354,7 +354,7 @@ AlternativeChampSelectText.grid(row = 3, column = 1)
 
 ChampBanLabel = TK.Label(text= "Champ to ban")
 ChampBanLabel.grid(row = 4, column = 0, sticky = TK.W, padx = 6)
-ChampBanText = AutocompleteEntry(completevalues=Champ)
+ChampBanText = AutocompleteEntry(completevalues=Champs)
 ChampBanText.grid(row = 4, column = 1)
 
 Window.columnconfigure([0,1], weight=2)
