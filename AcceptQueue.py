@@ -1,4 +1,5 @@
 from multiprocessing import Process
+from tkinter.tix import Select
 from tokenize import String
 import cv2 as cv
 from cv2 import waitKey
@@ -23,11 +24,11 @@ def Path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-#Move mouse and click it
-def Click(X, Y, Height, Width):
-    ClickX = int((X + (Width/2)))
-    ClickY = int((Y + (Height/2)))
-    pyautogui.leftClick(ClickX,ClickY, 2, 0)
+#Move mouse and click 
+def Click(X, Y, Height, Width, Clicks):
+    X = int((X + (Width/2)))
+    Y = int((Y + (Height/2)))
+    pyautogui.click(x = X, y= Y,clicks=Clicks)  
 
 #Returns screenshot of screen
 def Screenshot():
@@ -62,36 +63,45 @@ def AcceptQueue():
 
         maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(AcceptButtons, False)
         if maxVal >= 0.75:
-            Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth)
+            Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth, 1)
             time.sleep(4)
         time.sleep(2)
 
     
 def ChampSelect():
-    global ChampToSelect, InChampSelect, ChampToBan
-    maxVal = 0
-
+    global ChampToSelect, InChampSelect, ChampToBan, AlternativeChampToSelect, LockInButton
+    SearchBarLoc = list()
+    maxVal, SearchBarHeight,SearchBarWidth = 0, 0, 0
     if InChampSelect:
         while maxVal < 0.75 and InChampSelect and AutoSelect:
-            maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(BanButton, True)
+            maxVal, _, _, _ = TemplateMatch(BanButton, True)
             time.sleep(2)
         maxVal = 0
         if InChampSelect:
             BanChamp(ChampToBan)
         while maxVal < 0.75 and InChampSelect and AutoSelect:
-            maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(SearchBar, False)
+            maxVal, SearchBarLoc, SearchBarHeight, SearchBarWidth = TemplateMatch(SearchBar, False)
             time.sleep(2)
         if InChampSelect and AutoSelect:
             SearchForChamp(ChampToSelect)
             time.sleep(0.1)
             SelectChamp()
+            time.sleep(0.2)
             LockInChamp()
+            time.sleep(0.2)
+            maxVal, _ ,_ ,_  = TemplateMatch(LockInButton, True)
+            if maxVal >= 0.75:
+                SearchForAlternativeChamp(AlternativeChampToSelect,SearchBarLoc[0], SearchBarLoc[1],SearchBarHeight, SearchBarWidth)
+                time.sleep(0.1)
+                SelectChamp()
+                time.sleep(0.1)
+                LockInChamp()
             
 def LockInChamp():
     global LockIn
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(LockInButton, True)
     if maxVal > 0.75 and AutoSelect:
-        Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth)
+        Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth, 1)
 
 def BanChamp(ChampToBan):
 
@@ -101,7 +111,8 @@ def BanChamp(ChampToBan):
     SelectChamp()
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(BanButton, True)
     if maxVal >= 0.75 and AutoSelect:
-        Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth)
+        Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth, 1)
+    return maxVal
     
 
 def SearchForChamp(ChampName):
@@ -109,23 +120,26 @@ def SearchForChamp(ChampName):
     global SearchBar1
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(SearchBar, False)
     if maxVal > 0.75 and AutoSelect:   
-         Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth)
+         Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth, 1)
          pyautogui.write(ChampName)
     return maxVal
+
+def SearchForAlternativeChamp(ChampName, X, Y, TemplateHeight, TemplateWidth):
+    Click(X, Y, TemplateHeight, TemplateWidth, 2)
+    pyautogui.write(ChampName) 
 
 def SelectChamp():
     global TopLane
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(TopLane, False)
     if maxVal >= 0.75:
-
-        Click(maxLoc[0] + 25 , maxLoc[1] + 50, TemplateHeight, TemplateWidth)
+        Click(maxLoc[0] + 25 , maxLoc[1] + 50, TemplateHeight, TemplateWidth, 1)
+    return maxVal
     
 def DodgeCheck():
     global InChampSelect, DodgeChecks, AutoSelect
     while True and AutoSelect:
         while InChampSelect and AutoSelect:
-            maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(DodgeChecks, True)
-            print(maxVal)
+            maxVal, _, _, _ = TemplateMatch(DodgeChecks, True)
             if maxVal >= 0.75:
                 InChampSelect = False
             time.sleep(5)
@@ -135,9 +149,8 @@ def CheckChampSelect():
     global SearchBar1, InChampSelect, AutoSelect
 
     while True and AutoSelect:
-        while not InChampSelect and AutoSelect:
-            print("SELECT")
-            maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(SearchBar, False)
+        while  AutoSelect and not InChampSelect :
+            maxVal, _, _, _ = TemplateMatch(SearchBar, False)
             if maxVal >= 0.75:
                 InChampSelect = True
                 ChampSelectThread = Thread(target = ChampSelect, daemon = True)
@@ -160,20 +173,21 @@ def Procedure():
 #On Off Buttons
 AutoSelect = False
 def ToggleAutoSelect():
-    global AutoSelect, ToggleSelectButton, ChampBanText, ChampSelectText,ChampToBan,ChampToSelect
-    print(ChampToBan,ChampToSelect)
+    global AutoSelect, ToggleSelectButton, ChampBanText, ChampSelectText, AlternativeChampSelectText
     ProcedureThread = Thread(target = Procedure, daemon= True)
     #Toggle search and change text on button
     if AutoSelect:
         ToggleSelectButton.config(text='OFF')
         ChampBanText.config(state = TK.NORMAL, bg = "white")
         ChampSelectText.config(state = TK.NORMAL, bg = "white")
+        AlternativeChampSelectText.config(state = TK.NORMAL, bg = "white")
         AutoSelect = False
         
     else:
         ToggleSelectButton.config(text='ON')
         ChampBanText.config(state = TK.DISABLED, bg = "gray")
         ChampSelectText.config(state = TK.DISABLED, bg = "gray")
+        AlternativeChampSelectText.config(state = TK.DISABLED, bg = "gray")
         AutoSelect = True
         ProcedureThread.start()
         
@@ -199,6 +213,10 @@ def UpdateChampToSelect(Name):
 def UpdateChampToBan(Name):
     global ChampToBan
     ChampToBan = Name.get()
+
+def UpdateAlternativeChampToSelect(Name):
+    global AlternativeChampToSelect
+    AlternativeChampToSelect= Name.get()
 
 
 
@@ -297,14 +315,16 @@ TopLane = [TopLane1, TopLane2, TopLane3]
 
 ChampToBan = ""
 ChampToSelect = ""
+AlternativeChampToSelect = ""
 
 #GUI Stuff
 Window = TK.Tk()
 
 TempChampToBan = TK.StringVar()
 TempChampToSelect = TK.StringVar()
+TempAlternativeChampToSelect = TK.StringVar()
 
-Window.geometry("280x100")
+Window.geometry("300x150")
 Window.resizable(False,False)
 Window.title("Accept Queue")
 
@@ -324,14 +344,20 @@ ChampSelectText = TK.Entry(Window,textvariable = TempChampToSelect)
 ChampSelectText.grid(row = 2, column = 1)
 TempChampToSelect.trace("w", lambda name, index, mode, TempChampToSelect=TempChampToSelect: UpdateChampToSelect(TempChampToSelect))
 
+AlternativeChampSelectLabel = TK.Label(text= "Alternative champ to select")
+AlternativeChampSelectLabel.grid(row = 3, column = 0, sticky = TK.W, padx = 6)
+AlternativeChampSelectText = TK.Entry(Window,textvariable = TempAlternativeChampToSelect)
+AlternativeChampSelectText.grid(row = 3, column = 1)
+TempAlternativeChampToSelect.trace("w", lambda name, index, mode, TempAlternativeChampToSelect=TempAlternativeChampToSelect: UpdateAlternativeChampToSelect(TempAlternativeChampToSelect))
+
 ChampBanLabel = TK.Label(text= "Champ to ban")
-ChampBanLabel.grid(row = 3, column = 0, sticky = TK.W, padx = 6)
+ChampBanLabel.grid(row = 4, column = 0, sticky = TK.W, padx = 6)
 ChampBanText = TK.Entry(Window,textvariable = TempChampToBan)
 TempChampToBan.trace("w", lambda name, index, mode, TempChampToBan=TempChampToBan: UpdateChampToBan(TempChampToBan))
-ChampBanText.grid(row = 3, column = 1)
+ChampBanText.grid(row = 4, column = 1)
 
-Window.columnconfigure([0,1], weight=1)
-Window.rowconfigure([0,1,2,3], weight = 2)
+Window.columnconfigure([0,1], weight=2)
+Window.rowconfigure([0,1,2,3,4], weight = 2)
 Window.mainloop()
 
 
