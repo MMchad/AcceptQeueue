@@ -1,3 +1,4 @@
+from turtle import back
 from ttkwidgets.autocomplete import AutocompleteEntry
 from tokenize import String
 import cv2 as cv
@@ -9,7 +10,7 @@ import tkinter as TK
 from threading import Thread
 import sys
 import os
-import urllib.request, json 
+import urllib.request, json
 
 from setuptools import Command
 
@@ -186,17 +187,17 @@ def ToggleAutoSelect():
     ProcedureThread = Thread(target = Procedure, daemon= True)
 
     if AutoSelect:
-        ToggleSelectButton.config(text='OFF')
-        ChampSelectText.config(state = TK.NORMAL)
-        AlternativeChampSelectText.config(state = TK.NORMAL)
-        ChampBanText.config(state = TK.NORMAL)
+        ToggleSelectButton.config(text='OFF', foreground = "red")
+        ChampSelectText.config(state = TK.NORMAL, foreground = "black")
+        AlternativeChampSelectText.config(state = TK.NORMAL, foreground = "black")
+        ChampBanText.config(state = TK.NORMAL, foreground = "black")
         AutoSelect = False
         
     else:
-        ToggleSelectButton.config(text='ON')
-        ChampSelectText.config(state = TK.DISABLED)
-        AlternativeChampSelectText.config(state = TK.DISABLED)
-        ChampBanText.config(state = TK.DISABLED)
+        ToggleSelectButton.config(text='ON', foreground = "green")
+        ChampSelectText.config(state = TK.DISABLED, foreground= "green")
+        AlternativeChampSelectText.config(state = TK.DISABLED, foreground= "green")
+        ChampBanText.config(state = TK.DISABLED, foreground= "red")
         print(ChampBanText.keys())
         ChampToSelect, AlternativeChampToSelect, ChampToBan = ChampSelectText.get(), AlternativeChampSelectText.get(), ChampBanText.get()
         AutoSelect = True
@@ -210,11 +211,11 @@ def ToggleAccept():
     AcceptQueueThread = Thread(target = AcceptQueue, daemon= True)
     #Toggle search and change text on button
     if AutoAccept:
-        ToggleAcceptButton.config(text='OFF')
+        ToggleAcceptButton.config(text='OFF', foreground = "red")
         AutoAccept = False
         
     else:
-        ToggleAcceptButton.config(text='ON')
+        ToggleAcceptButton.config(text='ON', foreground = "green")
         AutoAccept = True
         AcceptQueueThread.start()
 
@@ -328,33 +329,35 @@ with urllib.request.urlopen("http://ddragon.leagueoflegends.com/cdn/12.12.1/data
 
 #################################################################GUI Stuff
 Window = TK.Tk()
-Window.geometry("300x150")
+Window.geometry("390x170")
 Window.resizable(False,False)
 Window.title("Accept Queue")
+Window.configure(background = "grey13")
 
-ToggleAcceptLabel = TK.Label(text= "Accept queues")
+
+ToggleAcceptLabel = TK.Label(text= "Accept queues", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
 ToggleAcceptLabel.grid(row = 0, column = 0, sticky = TK.W, padx = 6)
-ToggleAcceptButton = TK.Button(text="OFF", width=10, command=ToggleAccept)
+ToggleAcceptButton = TK.Button(text="OFF", width=10, command=ToggleAccept, background = "grey13",foreground = "red", font = ('Open Sans', 12, 'bold'))
 ToggleAcceptButton.grid(row = 0, column = 1)
 
-ToggleSelectLabel = TK.Label(text= "Auto select and ban")
+ToggleSelectLabel = TK.Label(text= "Auto champ select", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
 ToggleSelectLabel.grid(row = 1, column = 0, sticky = TK.W, padx = 6)
-ToggleSelectButton = TK.Button(text="OFF", width=10, command=ToggleAutoSelect)
+ToggleSelectButton = TK.Button(text="OFF", width=10, command=ToggleAutoSelect, background = "grey13",foreground = "red", font = ('Open Sans', 12, 'bold'))
 ToggleSelectButton.grid(row = 1, column = 1)
 
-ChampSelectLabel = TK.Label(text= "Champ to select")
+ChampSelectLabel = TK.Label(text= "Champ to select 1", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
 ChampSelectLabel.grid(row = 2, column = 0, sticky = TK.W, padx = 6)
-ChampSelectText = AutocompleteEntry(completevalues=Champs)
+ChampSelectText = AutocompleteEntry(completevalues=Champs, background = "grey13",foreground = "Black", font = ('Open Sans', 12, 'bold'))
 ChampSelectText.grid(row = 2, column = 1)
 
-AlternativeChampSelectLabel = TK.Label(text= "Alternative champ to select")
+AlternativeChampSelectLabel = TK.Label(text= "Champ to select 2", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
 AlternativeChampSelectLabel.grid(row = 3, column = 0, sticky = TK.W, padx = 6)
-AlternativeChampSelectText = AutocompleteEntry(completevalues=Champs)
+AlternativeChampSelectText = AutocompleteEntry(completevalues=Champs, background = "grey13",foreground = "Black", font = ('Open Sans', 12, 'bold'))
 AlternativeChampSelectText.grid(row = 3, column = 1)
 
-ChampBanLabel = TK.Label(text= "Champ to ban")
+ChampBanLabel = TK.Label(text= "Champ to ban", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
 ChampBanLabel.grid(row = 4, column = 0, sticky = TK.W, padx = 6)
-ChampBanText = AutocompleteEntry(completevalues=Champs)
+ChampBanText = AutocompleteEntry(completevalues=Champs, background = "red",foreground = "Black", font = ('Open Sans', 12, 'bold'))
 ChampBanText.grid(row = 4, column = 1)
 
 Window.columnconfigure([0,1], weight=2)
