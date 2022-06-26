@@ -112,7 +112,7 @@ def BanChamp(ChampToBan):
     SearchForChamp(ChampToBan)
     time.sleep(0.1)
     SelectChamp()
-    time.sleep(0.1)
+    time.sleep(0.2)
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(BanButton, True)
     if maxVal >= 0.75 and AutoSelect:
         Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth, 1)
@@ -125,7 +125,7 @@ def SearchForChamp(ChampName):
     global SearchBar1
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(SearchBar, False)
     if maxVal > 0.75 and AutoSelect:   
-         Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth, 1)
+         Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth, 2)
          pyautogui.write(ChampName)
     return maxVal
 
@@ -197,7 +197,6 @@ def ToggleAutoSelect():
         ChampSelectText.config(state = TK.DISABLED, foreground= "green")
         AlternativeChampSelectText.config(state = TK.DISABLED, foreground= "green")
         ChampBanText.config(state = TK.DISABLED, foreground= "red")
-        print(ToggleSelectButton.keys())
         ChampToSelect, AlternativeChampToSelect, ChampToBan = ChampSelectText.get(), AlternativeChampSelectText.get(), ChampBanText.get()
         AutoSelect = True
         ProcedureThread.start()
@@ -327,6 +326,7 @@ with urllib.request.urlopen("http://ddragon.leagueoflegends.com/cdn/12.12.1/data
         Champs.append(Champ)
 
 ################################################################# GUI Stuff
+
 Window = TK.Tk()
 Window.geometry("390x170")
 Window.resizable(False,False)
