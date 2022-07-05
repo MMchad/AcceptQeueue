@@ -17,6 +17,8 @@ from setuptools import Command
 #Returns actual path for files after release
 def Path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
+    relative_path = "Assets\\" + relative_path
+    print(relative_path)
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
@@ -73,29 +75,36 @@ def ChampSelect():
     global ChampToSelect, InChampSelect, ChampToBan, AlternativeChampToSelect, LockInButton
     SearchBarLoc = list()
     maxVal, SearchBarHeight,SearchBarWidth = 0, 0, 0
+
     if InChampSelect:
+        maxVal, SearchBarLoc, SearchBarHeight, SearchBarWidth = TemplateMatch(SearchBar, False)
+        if maxVal > 0.75:
+            LockIn, _ , _ , _  = TemplateMatch(LockInButton, True)
+            Ban, _, _, _ = TemplateMatch(BanButton, True)
+            
+            if LockIn < 0.75 and Ban < 0.75:
+                SearchForChamp(ChampToSelect)
+                time.sleep(0.1)
+                SelectChamp()
+        maxVal = 0
+
         while maxVal < 0.75 and InChampSelect and AutoSelect:
             maxVal, _, _, _ = TemplateMatch(BanButton, True)
             if InChampSelect and maxVal > 0.75:
-                print("Ban")
                 BanChamp(ChampToBan)
                 break
             maxVal, _, _, _ = TemplateMatch(LockInButton, True)
             if InChampSelect and maxVal > 0.75:
-                print("Already Banned")
                 break
             time.sleep(2)
         maxVal = 0
+
         while maxVal < 0.75 and InChampSelect and AutoSelect:
             maxVal, SearchBarLoc, SearchBarHeight, SearchBarWidth = TemplateMatch(SearchBar, False)
             time.sleep(2)
+
         if InChampSelect and AutoSelect:
-            SearchForChamp(ChampToSelect)
-            time.sleep(0.1)
             SelectChamp()
-            time.sleep(0.2)
-            LockInChamp()
-            time.sleep(0.2)
             maxVal, _ , _ , _  = TemplateMatch(LockInButton, True)
             if maxVal >= 0.75:
                 SearchForAlternativeChamp(AlternativeChampToSelect,SearchBarLoc[0], SearchBarLoc[1],SearchBarHeight, SearchBarWidth)
@@ -103,6 +112,15 @@ def ChampSelect():
                 SelectChamp()
                 time.sleep(0.1)
                 LockInChamp()
+
+def SelectChamp():
+    global ChampToSelect
+    SearchForChamp(ChampToSelect)
+    time.sleep(0.1)
+    SelectChampIcon()
+    time.sleep(0.2)
+    LockInChamp()
+    time.sleep(0.2)
 
 #Click on lock in button
 def LockInChamp():
@@ -117,7 +135,7 @@ def BanChamp(ChampToBan):
     global BanButton
     SearchForChamp(ChampToBan)
     time.sleep(0.1)
-    SelectChamp()
+    SelectChampIcon()
     time.sleep(0.2)
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(BanButton, True)
     if maxVal >= 0.75 and AutoSelect:
@@ -141,7 +159,7 @@ def SearchForAlternativeChamp(ChampName, X, Y, TemplateHeight, TemplateWidth):
     pyautogui.write(ChampName) 
 
 #Selects champ that was searched for
-def SelectChamp():
+def SelectChampIcon():
     global TopLane
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(TopLane, False)
     if maxVal >= 0.75:
