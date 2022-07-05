@@ -76,10 +76,16 @@ def ChampSelect():
     if InChampSelect:
         while maxVal < 0.75 and InChampSelect and AutoSelect:
             maxVal, _, _, _ = TemplateMatch(BanButton, True)
+            if InChampSelect and maxVal > 0.75:
+                print("Ban")
+                BanChamp(ChampToBan)
+                break
+            maxVal, _, _, _ = TemplateMatch(LockInButton, True)
+            if InChampSelect and maxVal > 0.75:
+                print("Already Banned")
+                break
             time.sleep(2)
         maxVal = 0
-        if InChampSelect:
-            BanChamp(ChampToBan)
         while maxVal < 0.75 and InChampSelect and AutoSelect:
             maxVal, SearchBarLoc, SearchBarHeight, SearchBarWidth = TemplateMatch(SearchBar, False)
             time.sleep(2)
@@ -170,7 +176,7 @@ def CheckChampSelect():
                 time.sleep(5)
 
 
-#Initiate required methods for auto champ select ond ifferent threads
+#Initiate required methods for auto champ select on different threads
 InChampSelect = False
 def Procedure():
     CheckChampSelectThread = Thread(target = CheckChampSelect, daemon = True)
@@ -203,6 +209,7 @@ def ToggleAutoSelect():
 
 #Toggle auto accept  and run AcceptQueue() on different thread      
 AutoAccept = False
+AutoAcceptDelay = 0.0
 def ToggleAccept():
     global AutoAccept,ToggleAcceptButton
     print(ChampToBan)
