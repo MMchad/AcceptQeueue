@@ -1,3 +1,4 @@
+from re import L
 from turtle import back
 from ttkwidgets.autocomplete import AutocompleteEntry
 from tokenize import String
@@ -18,7 +19,6 @@ from setuptools import Command
 def Path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     relative_path = "Assets\\" + relative_path
-    print(relative_path)
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
@@ -78,21 +78,22 @@ def ChampSelect():
 
     if InChampSelect:
         maxVal, SearchBarLoc, SearchBarHeight, SearchBarWidth = TemplateMatch(SearchBar, False)
-        if maxVal > 0.75:
+        if maxVal > 0.75 and ChampToSelect.get() != "None":
             LockIn, _ , _ , _  = TemplateMatch(LockInButton, True)
             Ban, _, _, _ = TemplateMatch(BanButton, True)
             
             if LockIn < 0.75 and Ban < 0.75:
-                SearchForChamp(ChampToSelect)
+                SearchForChamp(ChampToSelect.get())
                 time.sleep(0.1)
                 SelectChamp()
         maxVal = 0
 
         while maxVal < 0.75 and InChampSelect and AutoSelect:
-            maxVal, _, _, _ = TemplateMatch(BanButton, True)
-            if InChampSelect and maxVal > 0.75:
-                BanChamp(ChampToBan)
-                break
+            if ChampToBan.get() != "None":
+                maxVal, _, _, _ = TemplateMatch(BanButton, True)
+                if InChampSelect and maxVal > 0.75:
+                    BanChamp(ChampToBan.get())
+                    break
             maxVal, _, _, _ = TemplateMatch(LockInButton, True)
             if InChampSelect and maxVal > 0.75:
                 break
@@ -103,11 +104,11 @@ def ChampSelect():
             maxVal, SearchBarLoc, SearchBarHeight, SearchBarWidth = TemplateMatch(SearchBar, False)
             time.sleep(2)
 
-        if InChampSelect and AutoSelect:
+        if InChampSelect and AutoSelect and ChampToSelect.get() != "None":
             SelectChamp()
             maxVal, _ , _ , _  = TemplateMatch(LockInButton, True)
-            if maxVal >= 0.75:
-                SearchForAlternativeChamp(AlternativeChampToSelect,SearchBarLoc[0], SearchBarLoc[1],SearchBarHeight, SearchBarWidth)
+            if maxVal >= 0.75 and AlternativeChampToSelect.get() != "None":
+                SearchForAlternativeChamp(AlternativeChampToSelect.get(),SearchBarLoc[0], SearchBarLoc[1],SearchBarHeight, SearchBarWidth)
                 time.sleep(0.1)
                 SelectChamp()
                 time.sleep(0.1)
@@ -115,7 +116,7 @@ def ChampSelect():
 
 def SelectChamp():
     global ChampToSelect
-    SearchForChamp(ChampToSelect)
+    SearchForChamp(ChampToSelect.get())
     time.sleep(0.1)
     SelectChampIcon()
     time.sleep(0.2)
@@ -221,7 +222,10 @@ def ToggleAutoSelect():
         ChampSelectText.config(state = TK.DISABLED, foreground= "green")
         AlternativeChampSelectText.config(state = TK.DISABLED, foreground= "green")
         ChampBanText.config(state = TK.DISABLED, foreground= "red")
-        ChampToSelect, AlternativeChampToSelect, ChampToBan = ChampSelectText.get(), AlternativeChampSelectText.get(), ChampBanText.get()
+        Fields = [ChampToSelect, ChampToBan, AlternativeChampToSelect]
+        for Field in Fields:
+            if Field.get() == "":
+                Field.set("None")
         AutoSelect = True
         ProcedureThread.start()
 
@@ -339,16 +343,13 @@ TopLane = [TopLane1, TopLane2, TopLane3]
 
 ################################################################
 
-ChampToBan = ""
-ChampToSelect = ""
-AlternativeChampToSelect = ""
-
 #Champ list for autocomplete
 with urllib.request.urlopen("http://ddragon.leagueoflegends.com/cdn/12.12.1/data/en_US/champion.json") as url:
     data = json.loads(url.read().decode())
     Champs = []
     for Champ in data["data"]:
         Champs.append(Champ)
+Champs.append("None")
 
 ################################################################# GUI Stuff
 
@@ -357,6 +358,11 @@ Window.geometry("390x170")
 Window.resizable(False,False)
 Window.title("Accept Queue")
 Window.configure(background = "grey13")
+
+
+ChampToBan = TK.StringVar(value = "None")
+ChampToSelect = TK.StringVar(value = "None")
+AlternativeChampToSelect = TK.StringVar(value = "None")
 
 
 ToggleAcceptLabel = TK.Label(text= "Accept queues", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
@@ -371,17 +377,17 @@ ToggleSelectButton.grid(row = 1, column = 1)
 
 ChampSelectLabel = TK.Label(text= "Champ to select 1", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
 ChampSelectLabel.grid(row = 2, column = 0, sticky = TK.W, padx = 6)
-ChampSelectText = AutocompleteEntry(completevalues=Champs, background = "grey13",foreground = "Black", font = ('Open Sans', 12, 'bold'))
+ChampSelectText = AutocompleteEntry(textvariable = ChampToSelect, completevalues=Champs, background = "grey13",foreground = "Black", font = ('Open Sans', 12, 'bold'))
 ChampSelectText.grid(row = 2, column = 1)
 
 AlternativeChampSelectLabel = TK.Label(text= "Champ to select 2", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
 AlternativeChampSelectLabel.grid(row = 3, column = 0, sticky = TK.W, padx = 6)
-AlternativeChampSelectText = AutocompleteEntry(completevalues=Champs, background = "grey13",foreground = "Black", font = ('Open Sans', 12, 'bold'))
+AlternativeChampSelectText = AutocompleteEntry(textvariable = AlternativeChampToSelect, completevalues=Champs, background = "grey13",foreground = "Black", font = ('Open Sans', 12, 'bold'))
 AlternativeChampSelectText.grid(row = 3, column = 1)
 
 ChampBanLabel = TK.Label(text= "Champ to ban", background = "grey13",foreground = "white", font = ('Open Sans', 12, 'bold'))
 ChampBanLabel.grid(row = 4, column = 0, sticky = TK.W, padx = 6)
-ChampBanText = AutocompleteEntry(completevalues=Champs, background = "red",foreground = "Black", font = ('Open Sans', 12, 'bold'))
+ChampBanText = AutocompleteEntry(textvariable = ChampToBan, completevalues=Champs, background = "red",foreground = "Black", font = ('Open Sans', 12, 'bold'))
 ChampBanText.grid(row = 4, column = 1)
 
 Window.columnconfigure([0,1], weight=2)
