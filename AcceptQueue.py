@@ -12,7 +12,6 @@ from threading import Thread
 import sys
 import os
 import urllib.request, json
-from setuptools import Command
 
 
 #Returns actual path for files after release
@@ -62,7 +61,7 @@ def TemplateMatch(Templates, Canny):
 def AcceptQueue():
     global AcceptButtons,AutoAccept
     #Look for accept button 
-    while True and AutoAccept:
+    while AutoAccept:
 
         maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(AcceptButtons, False)
         if maxVal >= 0.75:
@@ -109,9 +108,9 @@ def ChampSelect():
             maxVal, _ , _ , _  = TemplateMatch(LockInButton, True)
             if maxVal >= 0.75 and AlternativeChampToSelect.get() != "None":
                 SearchForAlternativeChamp(AlternativeChampToSelect.get(),SearchBarLoc[0], SearchBarLoc[1],SearchBarHeight, SearchBarWidth)
-                time.sleep(0.1)
+                time.sleep(0.2)
                 SelectChamp()
-                time.sleep(0.1)
+                time.sleep(0.2)
                 LockInChamp()
 
 def SelectChamp():
@@ -119,7 +118,7 @@ def SelectChamp():
     SearchForChamp(ChampToSelect.get())
     time.sleep(0.1)
     SelectChampIcon()
-    time.sleep(0.2)
+    time.sleep(0.4)
     LockInChamp()
     time.sleep(0.2)
 
@@ -137,7 +136,7 @@ def BanChamp(ChampToBan):
     SearchForChamp(ChampToBan)
     time.sleep(0.1)
     SelectChampIcon()
-    time.sleep(0.2)
+    time.sleep(0.4)
     maxVal, maxLoc, TemplateHeight, TemplateWidth = TemplateMatch(BanButton, True)
     if maxVal >= 0.75 and AutoSelect:
         Click(maxLoc[0], maxLoc[1], TemplateHeight, TemplateWidth, 1)
@@ -182,7 +181,7 @@ def DodgeCheck():
 def CheckChampSelect():
     global SearchBar1, InChampSelect, AutoSelect
 
-    while True and AutoSelect:
+    while AutoSelect:
         while  AutoSelect and not InChampSelect :
             maxVal, _, _, _ = TemplateMatch(SearchBar, False)
             if maxVal >= 0.75:
