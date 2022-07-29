@@ -26,7 +26,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-A simple app that takes care of the league of legends queue and champion select automatically. For runes and summoner spells u can pair it with something like the [Porofessor](https://porofessor.gg/download) app.
+A simple app that takes care of the league of legends queue and champion select automatically by moving the mouse cursor and simulating keyboard inputs. For runes and summoner spells u can pair it with something like the [Porofessor](https://porofessor.gg/download) app.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
