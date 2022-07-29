@@ -50,6 +50,7 @@ The app is quiet simple to use
 ### Accept Queues
 
 * Click on the Accept queues button to toggle it on. Any queue pop up will be accepted while it is on.
+
 ![Img1](https://github.com/MMchad/AutoQueue/blob/main/Screenshots/AutoAccept.gif?raw=true)
 
 ### Auto Champ Select
