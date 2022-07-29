@@ -344,7 +344,11 @@ TopLane = [TopLane1, TopLane2, TopLane3]
 ################################################################
 
 #Champ list for autocomplete
-with urllib.request.urlopen("http://ddragon.leagueoflegends.com/cdn/12.12.1/data/en_US/champion.json") as url:
+with urllib.request.urlopen("https://ddragon.leagueoflegends.com/api/versions.json") as url:
+    data = json.loads(url.read().decode())
+    Patch = data[0]
+    
+with urllib.request.urlopen("http://ddragon.leagueoflegends.com/cdn/"+ Patch +"/data/en_US/champion.json") as url:
     data = json.loads(url.read().decode())
     Champs = []
     for Champ in data["data"]:
