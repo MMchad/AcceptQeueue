@@ -170,7 +170,7 @@ def SelectChampIcon():
 #After entering champ select check if it is dodged and update InChampSelect
 def DodgeCheck():
     global InChampSelect, DodgeChecks, AutoSelect
-    while True and AutoSelect:
+    while AutoSelect:
         while InChampSelect and AutoSelect:
             maxVal, _, _, _ = TemplateMatch(DodgeChecks, True)
             if maxVal >= 0.75:
